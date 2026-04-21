@@ -4,7 +4,7 @@ const messages = require('@controllers/messagesController')
 const router = Router()
 
 router.get('/health', (req, res) => {
-	res.send('ok')
+  res.send('ok')
 })
 
 router.get('/messages', messages.getAll)

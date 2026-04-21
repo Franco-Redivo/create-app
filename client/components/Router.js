@@ -5,11 +5,10 @@ import FrontPage from 'Components/FrontPage'
 import MessageView from 'Components/MessageView'
 
 const Router = () => (
-	<Switch>
-		<Route exact path="/" component={FrontPage} />
-		<Route exact path="/messages" component={MessageView} />
-	</Switch>
+  <Switch>
+    <Route exact path="/" component={FrontPage} />
+    <Route exact path="/messages" component={MessageView} />
+  </Switch>
 )
 
 export default Router
-
