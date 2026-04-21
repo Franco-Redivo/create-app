@@ -13,6 +13,9 @@ module.exports = (env, argv) => {
 
   return {
     mode,
+    output: {
+      hashFunction: 'sha256',
+    },
     entry: [
       '@babel/polyfill', // so we don't need to import it anywhere
       './client',
