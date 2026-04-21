@@ -1,0 +1,15 @@
+name: Periodic_health_check
+
+on:
+  workflow_dispatch:
+  ## schedule:
+    ## - cron: '0 0 * * *' # every day at midnight
+
+jobs:
+  health_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Health_check
+        uses: jtalk/url-health-check-action@v5
+        with:
+          url: 'https://fs-pokedex-2uk6.onrender.com'

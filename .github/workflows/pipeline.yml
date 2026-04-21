@@ -1,0 +1,73 @@
+name: Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Install dependencies
+        run: npm install
+      - name: Check style
+        run: npm run lint
+      - name: Run tests
+        run: npm test
+      - name: Build project
+        run: npm run build
+  
+  deploy:
+    needs: [build_and_test]
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+    steps:
+      - name: Deploy
+        run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+  notify_success:
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Discord notification success
+        if: ${{ success() }}
+        uses: sarisia/actions-status-discord@v1.16.0
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+
+  notify_failure:
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Discord notification failure
+      if: ${{ failure() }}
+      uses: sarisia/actions-status-discord@v1.16.0
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+
+  tag_release:
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Bump version and push tag
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+        uses: anothrNick/github-tag-action@4ed44965e0db8dab2b466a16da04aec3cc312fd8
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
+          DEFAULT_BUMP: patch
