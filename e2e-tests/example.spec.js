@@ -1,19 +1,31 @@
 // @ts-check
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@playwright/test'
 
-test('has title', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
+test('renders the front page and navigates to messages', async ({ page }) => {
+  await page.goto('/')
 
-  // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Playwright/);
-});
+  await expect(page.getByText('Welcome')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Messages' })).toHaveAttribute('href', '/messages')
 
-test('get started link', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
+  await page.getByRole('link', { name: 'Messages' }).click()
 
-  // Click the get started link.
-  await page.getByRole('link', { name: 'Get started' }).click();
+  await expect(page).toHaveURL(/\/messages$/)
+  await expect(page.getByRole('heading', { name: 'Messages' })).toBeVisible()
+  await expect(page.locator('#message')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Send!' })).toBeVisible()
+})
 
-  // Expects page to have a heading with the name of Installation.
-  await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
-});
+test('can create and delete a message', async ({ page }) => {
+  const messageBody = `Hello from Playwright ${Date.now()}`
+
+  await page.goto('/messages')
+
+  await page.locator('#message').fill(messageBody)
+  await page.getByRole('button', { name: 'Send!' }).click()
+
+  await expect(page.getByText(messageBody)).toBeVisible()
+
+  await page.getByRole('button', { name: 'delete' }).click()
+
+  await expect(page.getByText(messageBody)).toHaveCount(0)
+})
